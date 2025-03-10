@@ -9,7 +9,6 @@ int f(int x) {
 
 int main() {
     int liczba;
-    cout << "Podaj liczbę:";
     cin >> liczba;
     
     int count = 1;
@@ -22,4 +21,4 @@ int main() {
     cout << ", " << count;
     
     return 0;
-}a
+}

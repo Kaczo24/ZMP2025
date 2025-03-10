@@ -1,5 +1,4 @@
 #include <iostream>
-#include <set>
 
 using namespace std;
 
@@ -26,7 +25,6 @@ int F(int x) {
 
 int main() {
     int liczba;
-    cout << "Podaj liczbę:";
     cin >> liczba;
     cout << F(liczba);
     

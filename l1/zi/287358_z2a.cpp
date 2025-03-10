@@ -1,5 +1,4 @@
 #include <iostream>
-#include <set>
 
 using namespace std;
 
@@ -16,7 +15,6 @@ int euler(int x) {
 
 int main() {
     int liczba;
-    cout << "Podaj liczbę:";
     cin >> liczba;
     cout << euler(liczba);
     
