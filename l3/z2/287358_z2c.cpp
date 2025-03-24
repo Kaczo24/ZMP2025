@@ -16,8 +16,8 @@ int main()
 
 	for(long n = 0; n < ((long)1 << (long)size); n++) {
 	    int sum = 0;
-	    for(int m = 0; m < size; m++)
-	        if((n & (1 << m)) != 0) sum++;
+	    for(int m = n; m > 0; m >>= 1)
+	        sum += m&1;
 	    if(sum != k) continue;
 		for(int m = 0; m < size; m++)
 			if((n & (1 << m)) != 0)
