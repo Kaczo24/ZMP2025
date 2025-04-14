@@ -1,6 +1,8 @@
 #include <iostream>
 #include <tuple>
 
+// O(n) btw, dokładniej 2n-1
+
 using namespace std;
 
 inline int min(int n, int m) { return m > n ? n : m; }
@@ -33,9 +35,9 @@ int main()
     for(int n = 0; n < size; n++)
         cin >> arr[n];
             
-    auto pair = seek(arr, 0, size - 1);
+    auto out = seek(arr, 0, size - 1);
             
-    cout << get<2>(pair);
+    cout << get<2>(out);
     
     return 0;
 }

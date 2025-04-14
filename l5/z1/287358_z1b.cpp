@@ -2,46 +2,40 @@
 
 using namespace std;
 
-int merge(int arr[], int p, int q, int r) {
-    int n1 = q - p + 1;
-    int n2 = r - q;
+int merge(int arr[], int left, int mid, int right) {
+    int size1 = mid - left + 1;
+    int size2 = right - mid;
+    int L[size1], R[size2];
   
-    int L[n1], M[n2];
-  
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[p + i];
+    for (int n = 0; n < size1; n++) L[n] = arr[left + n];
+    for (int n = 0; n < size2; n++) R[n] = arr[mid + 1 + n];
     
-    for (int j = 0; j < n2; j++)
-        M[j] = arr[q + 1 + j];
+    int i = 0, j = 0, k = left, count = 0;
     
-    int i = 0, j = 0, k = p, count = 0;
-
-    while (i < n1 && j < n2)
-        if (L[i] <= M[j])
+    while (i < size1 && j < size2)
+        if (L[i] <= R[j]) 
             arr[k++] = L[i++];
         else {
-            arr[k++] = M[j++];
-            count += n1 - i;
+            arr[k++] = R[j++];
+            count += size1 - i;
         }
 
-    while (i < n1) 
-        arr[k++] = L[i++];
+    while (i < size1) arr[k++] = L[i++];
 
-    while (j < n2)
-        arr[k++] = M[j++];
+    while (j < size2) arr[k++] = R[j++];
     
     return count;
 }
 
 
-int mergeSort(int arr[], int l, int r) {
-    if (l < r) {
-        int m = l + (r - l) / 2, count = 0;
+int mergeSort(int arr[], int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2, count = 0;
 
-        count += mergeSort(arr, l, m);
-        count += mergeSort(arr, m + 1, r);
+        count += mergeSort(arr, left, mid);
+        count += mergeSort(arr, mid + 1, right);
 
-        return count + merge(arr, l, m, r);
+        return count + merge(arr, left, mid, right);
     }
     return 0;
 }
@@ -59,7 +53,6 @@ int main()
         
     int inv = 0;
     
-            
     cout << mergeSort(arr, 0, size - 1);
     
     return 0;
