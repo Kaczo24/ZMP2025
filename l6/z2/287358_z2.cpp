@@ -4,26 +4,116 @@
 using namespace std;
 
 class BinTree {
-    
-    public:
+    private:
+
     struct Node {
         Node* left;
         Node* right;
         int value = 0;
+        
+        Node(){}
+        Node(int val) {value=val;}
+        Node(int val, int leftValue, int rightValue) {
+            value = val;
+            left = new Node(leftValue);
+            right = new Node(rightValue);
+        }
+        Node(int val, Node* leftNode, Node* rightNode) {
+            value = val;
+            left = leftNode;
+            right = rightNode;
+        }
     };
+
+    BinTree(Node* node) {
+        root = node;
+    }
+
     void printAug(Node* r, int depth, string arr[]) {
         arr[depth] += to_string(r->value);
-        for(int n = 0; n < (1 << (height() - depth - 1)); n++) arr[depth] += "\t";
-        if(r->left != nullptr) printAug(r->left, depth + 1, arr);
-        if(r->right != nullptr) printAug(r->right, depth + 1, arr);
+        int h = height();
+        for(int n = 0; n < (1 << (h - depth - 1)); n++)
+            arr[depth] += "\t";
+
+        if(r->left != nullptr) 
+            printAug(r->left, depth + 1, arr);
+        else for(int m = 1; depth + m < h; m++)
+            for(int n = 0; n < (1 << (h - depth - 2)); n++) 
+                arr[depth + m] += "\t";
+
+        if(r->right != nullptr) 
+            printAug(r->right, depth + 1, arr);
+        else for(int m = 1; depth + m < h; m++)
+            for(int n = 0; n < (1 << (h - depth - 2)); n++) 
+                arr[depth + m] += "\t";
+    }
+
+    int height(Node* trace) {
+        if(trace == nullptr) return 0;
+        int size1 = 0, size2 = 0;
+        if(trace->left != nullptr) size1 = height(trace->left);
+        if(trace->right != nullptr) size2 = height(trace->right);
+        return 1 + (size1 > size2 ? size1 : size2);
+    }
+
+    bool includes(int val, Node* trace) {
+        if(trace->value == val) return true;
+        bool b1, b2;
+        if(trace->left != nullptr) b1 = includes(val, trace->left);
+        if(trace->right != nullptr) b2 = includes(val, trace->right);
+        return b1 || b2;
+    }
+
+    int countNodes(Node* trace) {
+        if(trace == nullptr) return 0;
+        return 1 + countNodes(trace->left) + countNodes(trace->right);
     }
     
+    int countLeaves(Node* trace) {
+        if(trace == nullptr) return 0;
+        if(trace->left == nullptr && trace->right == nullptr) return 1;
+        return countLeaves(trace->left) + countLeaves(trace->right);
+    }
+
+    public:
     Node* root;
     
-    int height() {
-    
-        return 3;
+    BinTree() {}
+    BinTree(int val) {
+        root = new Node(val);
     }
+    
+    static BinTree Glue(int root, BinTree left, BinTree right) {
+        return BinTree(new Node(root, left.root, right.root));
+    }
+    
+    static BinTree FromArray(int arr[], int size) {
+        if(size == 0) return BinTree();
+        BinTree tree = BinTree(arr[0]);
+        int sectionSize = 1;
+        Node** list = new Node*[sectionSize]{tree.root};
+        Node** list2 = new Node*[sectionSize<<1];
+        
+        int index = 1, sectionPlace = 0;
+        while(index < size) {
+            Node* loc = list[sectionPlace>>1];
+            list2[sectionPlace] = new Node(arr[index++]);
+            if((sectionPlace&1) == 0) loc->left = list2[sectionPlace];
+            else loc->right = list2[sectionPlace];
+            sectionPlace++;
+            if((sectionPlace>>1) == sectionSize) {
+                list = list2;
+                sectionSize <<= 1;
+                list2 = new Node*[sectionSize<<1];
+                sectionPlace = 0;
+            }
+        }
+        delete[] list;
+        delete[] list2;
+        return tree;
+    }
+    
+    int height() {return height(root);}
     
     void print() {
         string out[height()];
@@ -33,42 +123,32 @@ class BinTree {
             cout << out[n] << endl;
     }
     
+    bool includes(int value) {return includes(value, root);}
+    
+    int countNodes() {return countNodes(root);}
+
+    int countLeaves() {return countLeaves(root);}
+
 };
 
 
 int main()
 {
-    /*int size, temp;
-    cin >> size;
+    int n1, n2, r, s;
+    cin >> n1 >> n2 >> r >> s;
+    int arr1[n1], arr2[n2];
     
-    Vector<int> arr;
+    for(int n = 0; n < n1; n++) cin >> arr1[n];
+    for(int n = 0; n < n2; n++) cin >> arr2[n];
     
-    for(int n = 0; n < size; n++) {
-        cin >> temp;
-        arr.push(temp);
-    }*/
-    
-    BinTree tree;
-    
-    tree.root = new BinTree::Node();
-    tree.root->value = 1;
-    tree.root->left = new BinTree::Node();
-    tree.root->right = new BinTree::Node();
-    
-    tree.root->left->value = 2;
-    tree.root->left->left = new BinTree::Node();
-    tree.root->left->right = new BinTree::Node();
-    
-    tree.root->right->value = 3;
-    tree.root->right->left = new BinTree::Node();
-    tree.root->right->right = new BinTree::Node();
-    
-    tree.root->left->left->value = 4;
-    tree.root->left->right->value = 5;
-    tree.root->right->left->value = 6;
-    tree.root->right->right->value = 7;
-    
+    BinTree tree1 = BinTree::FromArray(arr1, n1), tree2 = BinTree::FromArray(arr2, n2);
+    BinTree tree = BinTree::Glue(r, tree1, tree2);
     tree.print();
     
+    cout << "\n\n";
+
+    cout << "Węzły: " << tree.countNodes() << endl;
+    cout << "Liście: " << tree.countLeaves() << endl;
+    cout << "Zawiera " << s << ": " << (tree.includes(s) ? "tak" : "nie") << endl;
     return 0;
 }
