@@ -91,23 +91,34 @@ class BinTree {
         if(size == 0) return BinTree();
         BinTree tree = BinTree(arr[0]);
         int sectionSize = 1;
+
         Node** list = new Node*[sectionSize]{tree.root};
         Node** list2 = new Node*[sectionSize<<1];
         
+        int iterum = 0;
+        while((size >> iterum) > 0) iterum++;
+        Node*** listOfLists = new Node**[iterum];
+        int llInd = 0;
+        
         int index = 1, sectionPlace = 0;
         while(index < size) {
-            Node* loc = list[sectionPlace>>1];
             list2[sectionPlace] = new Node(arr[index++]);
+            
+            Node* loc = list[sectionPlace>>1];
             if((sectionPlace&1) == 0) loc->left = list2[sectionPlace];
             else loc->right = list2[sectionPlace];
+            
             sectionPlace++;
             if((sectionPlace>>1) == sectionSize) {
+                listOfLists[llInd++] = list;
                 list = list2;
                 sectionSize <<= 1;
                 list2 = new Node*[sectionSize<<1];
                 sectionPlace = 0;
             }
         }
+        for(int n = 0; n < llInd; n++) delete[] listOfLists[n];
+        delete[] listOfLists;
         delete[] list;
         delete[] list2;
         return tree;
