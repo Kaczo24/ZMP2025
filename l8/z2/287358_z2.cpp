@@ -10,15 +10,17 @@ private:
         Node* right = nullptr;
           
         Node(){}
-        Node(int val){
-            key = val;
+        Node(int val) : key(val) {}
+        Node(Node& other) : key(other.key) {
+            if(other.left != nullptr) left = new Node(*other.left);
+            if(other.right != nullptr) right = new Node(*other.right);
         }
-        Node(int val, Node* _left, Node* _right){
-            key = val;
-            left = _left;
-            right = _right;
+        Node(Node&& other) : key(other.key) {
+            if(other.left != nullptr) left = new Node(*other.left);
+            if(other.right != nullptr) right = new Node(*other.right);
         }
         ~Node(){
+            cout << "deleting " << key << endl; 
             delete left;
             delete right;
         }
@@ -31,25 +33,27 @@ private:
                 (*right).show_node();
         }
         
+        Node& operator=(Node& other) = default;
+        
         bool operator==(Node &other) {
             if(this == nullptr && &other == nullptr)  return true;
             if(this == nullptr || &other == nullptr)  return false;
             return (*left == *other.left) && (*right == *other.right);
         }
         
-        Node operator+(Node &other) {
-            if(this == nullptr || &other == nullptr)  return *this;
-            
-            Node a, b, result = Node(key + other.key);
+        Node& operator+(Node &other) {
+            cout << "adding " << key << endl; 
+            Node a, b, result;
+            result.key = key + other.key;
             if(left != nullptr) {
                 a = (*left) + (*other.left);
                 result.left = &a;
             }
             if(right != nullptr) {
-                a = (*right) + (*other.right);
-                result.right = &a;
+                b = (*right) + (*other.right);
+                result.right = &b;
             }
-            return Node(key + other.key, &a, &b);
+            return result;
         }
     };
     
@@ -57,7 +61,13 @@ private:
     
 public:
     
-    Btree(){}
+    Btree() {}
+    //Btree(Btree& other) {
+    //    root = new Node(*other.root);
+    //}
+    //Btree(Btree&& other) {
+    //    *root = move(*other.root);
+    //}
     ~Btree(){
         delete root;
     }
@@ -84,12 +94,14 @@ public:
         if(this->root == nullptr && other.root == nullptr) return true;
         return *(this->root)==*(other.root);
     }
-    bool operator!=(Btree other) {return !(*this == other);}
+    bool operator!=(Btree &other) {return !(*this == other);}
     
-    Btree operator+(Btree &other) {
+    Btree& operator+(Btree &other) {
         if(*this != other) return *this;
-        Btree result = Btree();
-        *result.root = (*this->root + *other.root);
+        Btree result;
+        Node r = *this->root + *other.root;
+        cout << "adding done" << endl;
+        result.root = &r;
         return result;
     }
     
@@ -110,7 +122,7 @@ int main(){
   
   
   
-  auto res = (tree + tree2);
+  Btree res = (tree + tree);
   res.show_tree();
   
   return 0;
