@@ -12,15 +12,17 @@ private:
         Node(){}
         Node(int val) : key(val) {}
         Node(Node& other) : key(other.key) {
-            if(other.left != nullptr) left = new Node(*other.left);
-            if(other.right != nullptr) right = new Node(*other.right);
+            if(other.left != nullptr) 
+                left = new Node(*other.left);
+            if(other.right != nullptr) 
+                right = new Node(*other.right);
         }
         Node(Node&& other) : key(other.key) {
             if(other.left != nullptr) left = new Node(*other.left);
             if(other.right != nullptr) right = new Node(*other.right);
+            other.left = other.right = nullptr;
         }
         ~Node(){
-            cout << "deleting " << key << endl; 
             delete left;
             delete right;
         }
@@ -35,25 +37,38 @@ private:
         
         Node& operator=(Node& other) = default;
         
-        bool operator==(Node &other) {
+        bool operator==(const Node &other) {
             if(this == nullptr && &other == nullptr)  return true;
             if(this == nullptr || &other == nullptr)  return false;
             return (*left == *other.left) && (*right == *other.right);
         }
         
-        Node& operator+(Node &other) {
-            cout << "adding " << key << endl; 
-            Node a, b, result;
-            result.key = key + other.key;
-            if(left != nullptr) {
-                a = (*left) + (*other.left);
-                result.left = &a;
-            }
-            if(right != nullptr) {
-                b = (*right) + (*other.right);
-                result.right = &b;
-            }
+        Node operator+(const Node &other) {
+            Node result(key + other.key);
+            if(left != nullptr)
+                result.left = new Node((*left) + (*other.left));
+            if(right != nullptr)
+                result.right = new Node((*right) + (*other.right));
             return result;
+        }
+        
+        Node operator-(const Node &other) {
+            Node result(key - other.key);
+            if(left != nullptr)
+                result.left = new Node((*left) - (*other.left));
+            if(right != nullptr)
+                result.right = new Node((*right) - (*other.right));
+            return result;
+        }
+        
+        friend ostream& operator<<(ostream& os, const Node& node)
+        {
+            if (node.left!=nullptr)
+                os << *node.left;
+            os << node.key << " ";
+            if (node.right!=nullptr)
+                os << *node.right;
+            return os;
         }
     };
     
@@ -62,12 +77,13 @@ private:
 public:
     
     Btree() {}
-    //Btree(Btree& other) {
-    //    root = new Node(*other.root);
-    //}
-    //Btree(Btree&& other) {
-    //    *root = move(*other.root);
-    //}
+    Btree(Btree& other) {
+        root = new Node(*other.root);
+    }
+    Btree(Btree&& other) {
+        root = other.root;
+        other.root = nullptr;
+    }
     ~Btree(){
         delete root;
     }
@@ -90,40 +106,66 @@ public:
       cout << "\n";
     }
     
-    bool operator==(Btree &other) {
+    bool operator==(const Btree &other) {
         if(this->root == nullptr && other.root == nullptr) return true;
         return *(this->root)==*(other.root);
     }
-    bool operator!=(Btree &other) {return !(*this == other);}
+    bool operator!=(const Btree &other) {return !(*this == other);}
     
-    Btree& operator+(Btree &other) {
+    Btree& operator=(const Btree& other) = default;
+    
+    Btree operator+(const Btree &other) {
         if(*this != other) return *this;
         Btree result;
-        Node r = *this->root + *other.root;
-        cout << "adding done" << endl;
-        result.root = &r;
+        result.root = new Node(*this->root + *other.root);
         return result;
     }
+    
+    Btree operator-(const Btree &other) {
+        if(*this != other) return *this;
+        Btree result;
+        result.root = new Node(*this->root - *other.root);
+        return result;
+    }
+    
+    friend ostream& operator<<(ostream& os, const Btree& tree)
+    {
+        os << *tree.root << "\n";
+        return os;
+    }
+    
+    friend istream& operator>>(istream &is, Btree& tree)
+    {
+        int count = 0, temp;
+        is >> count;
+        for(int n = 0; n < count; n++) {
+            is >> temp;
+            tree.insert(temp);
+        }
+        return is;
+    }
+    
+    //int& operator[](int index) {
+    //    Node* current = root;
+    //    for(int n = 0; n < index; n++) {
+    //        
+    //    }
+    //}
     
 };
 
 int main(){
-  Btree tree = Btree();
-  tree.insert(10);
-  tree.insert(8);
-  tree.insert(19);
-  tree.show_tree();
-  
-  Btree tree2 = Btree();
-  tree2.insert(10);
-  tree2.insert(8);
-  tree2.insert(19);
-  tree2.show_tree();
-  
-  
-  
-  Btree res = (tree + tree);
-  res.show_tree();
-  
+    Btree tree;
+    cin >> tree;
+    cout << tree;
+    
+    Btree tree2;
+    cin >> tree2;
+    cout << tree2;
+    
+    if(tree == tree2)
+        cout << "Są izomorficzne" << endl << tree + tree2 << tree - tree2;
+    else 
+        cout << "Nie są izomorficzne" << endl;
   return 0;
 }
