@@ -18,8 +18,10 @@ private:
                 right = new Node(*other.right);
         }
         Node(Node&& other) : key(other.key) {
-            if(other.left != nullptr) left = new Node(*other.left);
-            if(other.right != nullptr) right = new Node(*other.right);
+            if(other.left != nullptr) 
+                left = other.left;
+            if(other.right != nullptr) 
+                right = other.right;
             other.left = other.right = nullptr;
         }
         ~Node(){
@@ -27,12 +29,17 @@ private:
             delete right;
         }
         
-        void show_node(){
-            if (left!=nullptr)
+        void show_node() {
+            if (left != nullptr)
                 (*left).show_node();
             cout << key << " ";
-            if (right!=nullptr)
+            if (right != nullptr)
                 (*right).show_node();
+        }
+
+        int node_count() {
+            if(this == nullptr) return 0;
+            return 1 + (*left).node_count() + (*right).node_count();
         }
         
         Node& operator=(Node& other) = default;
@@ -63,10 +70,10 @@ private:
         
         friend ostream& operator<<(ostream& os, const Node& node)
         {
-            if (node.left!=nullptr)
+            if (node.left != nullptr)
                 os << *node.left;
             os << node.key << " ";
-            if (node.right!=nullptr)
+            if (node.right != nullptr)
                 os << *node.right;
             return os;
         }
@@ -74,6 +81,15 @@ private:
     
     Node* root = nullptr;
     
+    void insert_node_aux(Node*& node, int new_key) {
+        if (node == nullptr) 
+            node = new Node(new_key);
+        else if (new_key < node->key)
+            insert_node_aux(node->left, new_key);
+        else 
+            insert_node_aux(node->right, new_key);
+    }
+
 public:
     
     Btree() {}
@@ -84,21 +100,12 @@ public:
         root = other.root;
         other.root = nullptr;
     }
-    ~Btree(){
+    ~Btree() {
         delete root;
     }
     
-    void insert(int new_key){
-        insert_node_aux(root,new_key);
-    }
-    
-    void insert_node_aux(Node*& node, int new_key) {
-        if (node == nullptr) 
-            node=new Node(new_key);
-        else if (new_key < node->key)
-            insert_node_aux(node->left,new_key);
-        else 
-            insert_node_aux(node->right,new_key);
+    void insert(int new_key) {
+        insert_node_aux(root, new_key);
     }
     
     void show_tree() {
@@ -106,11 +113,13 @@ public:
       cout << "\n";
     }
     
+    int node_count() { return (*root).node_count(); }
+    
     bool operator==(const Btree &other) {
         if(this->root == nullptr && other.root == nullptr) return true;
         return *(this->root)==*(other.root);
     }
-    bool operator!=(const Btree &other) {return !(*this == other);}
+    bool operator!=(const Btree &other) { return !(*this == other); }
     
     Btree& operator=(const Btree& other) = default;
     
@@ -130,13 +139,13 @@ public:
     
     friend ostream& operator<<(ostream& os, const Btree& tree)
     {
-        os << *tree.root << "\n";
+        os << *tree.root << endl;
         return os;
     }
     
     friend istream& operator>>(istream &is, Btree& tree)
     {
-        int count = 0, temp;
+        int count, temp;
         is >> count;
         for(int n = 0; n < count; n++) {
             is >> temp;
@@ -145,16 +154,23 @@ public:
         return is;
     }
     
-    //int& operator[](int index) {
-    //    Node* current = root;
-    //    for(int n = 0; n < index; n++) {
-    //        
-    //    }
-    //}
-    
+    int& operator[](int index) {
+        Node* current = root;
+        while(index > 0) {
+            int left = (*current->left).node_count();
+            if(left >= index) {
+                index--;
+                current = current->left;
+            } else {
+                index -= left + 1;
+                current = current->right;
+            }
+        }
+        return current->key;
+    }
 };
 
-int main(){
+int main() {
     Btree tree;
     cin >> tree;
     cout << tree;
@@ -167,5 +183,9 @@ int main(){
         cout << "Są izomorficzne" << endl << tree + tree2 << tree - tree2;
     else 
         cout << "Nie są izomorficzne" << endl;
-  return 0;
+        
+    for(int n = 0; n < tree.node_count(); n++) 
+        cout << tree[n] << endl;
+    
+    return 0;
 }
