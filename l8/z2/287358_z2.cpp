@@ -44,13 +44,13 @@ private:
         
         Node& operator=(Node& other) = default;
         
-        bool operator==(const Node &other) {
+        bool operator==(const Node& other) {
             if(this == nullptr && &other == nullptr)  return true;
             if(this == nullptr || &other == nullptr)  return false;
             return (*left == *other.left) && (*right == *other.right);
         }
         
-        Node operator+(const Node &other) {
+        Node operator+(const Node& other) {
             Node result(key + other.key);
             if(left != nullptr)
                 result.left = new Node((*left) + (*other.left));
@@ -59,7 +59,7 @@ private:
             return result;
         }
         
-        Node operator-(const Node &other) {
+        Node operator-(const Node& other) {
             Node result(key - other.key);
             if(left != nullptr)
                 result.left = new Node((*left) - (*other.left));
@@ -115,22 +115,22 @@ public:
     
     int node_count() { return (*root).node_count(); }
     
-    bool operator==(const Btree &other) {
+    bool operator==(const Btree& other) {
         if(this->root == nullptr && other.root == nullptr) return true;
         return *(this->root)==*(other.root);
     }
-    bool operator!=(const Btree &other) { return !(*this == other); }
+    bool operator!=(const Btree& other) { return !(*this == other); }
     
     Btree& operator=(const Btree& other) = default;
     
-    Btree operator+(const Btree &other) {
+    Btree operator+(const Btree& other) {
         if(*this != other) return *this;
         Btree result;
         result.root = new Node(*this->root + *other.root);
         return result;
     }
     
-    Btree operator-(const Btree &other) {
+    Btree operator-(const Btree& other) {
         if(*this != other) return *this;
         Btree result;
         result.root = new Node(*this->root - *other.root);
@@ -143,7 +143,7 @@ public:
         return os;
     }
     
-    friend istream& operator>>(istream &is, Btree& tree)
+    friend istream& operator>>(istream& is, Btree& tree)
     {
         int count, temp;
         is >> count;
