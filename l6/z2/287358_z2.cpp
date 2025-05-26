@@ -7,27 +7,40 @@ class BinTree {
     private:
 
     struct Node {
-        Node* left;
-        Node* right;
+        Node* left = nullptr;
+        Node* right = nullptr;
         int value = 0;
         
         Node(){}
-        Node(int val) {value=val;}
-        Node(int val, int leftValue, int rightValue) {
-            value = val;
+        Node(int val) : value(val) {}
+        Node(int val, int leftValue, int rightValue) : value(val) {
             left = new Node(leftValue);
             right = new Node(rightValue);
         }
-        Node(int val, Node* leftNode, Node* rightNode) {
-            value = val;
-            left = leftNode;
-            right = rightNode;
+        Node(int val, Node* leftNode, Node* rightNode) : value(val) {
+            left = new Node(*leftNode);
+            right = new Node(*rightNode);
         }
+        Node(Node& other) : value(other.value) {
+            if(other.left != nullptr) 
+                left = new Node(*other.left);
+            if(other.right != nullptr) 
+                right = new Node(*other.right);
+        }
+        Node(Node&& other) : value(other.value) {
+            left = other.left;
+            right = other.right;
+            other.left = other.right = nullptr;
+        }
+        ~Node() {
+            delete left;
+            delete right;
+        }
+        
+        Node& operator=(Node& other) = default;
     };
 
-    BinTree(Node* node) {
-        root = node;
-    }
+    BinTree(Node* node) : root(node) {}
 
     void printAug(Node* r, int depth, string arr[]) {
         arr[depth] += to_string(r->value);
@@ -75,56 +88,58 @@ class BinTree {
         return countLeaves(trace->left) + countLeaves(trace->right);
     }
 
+    Node* root = nullptr;
     public:
-    Node* root;
     
     BinTree() {}
     BinTree(int val) {
         root = new Node(val);
     }
+    BinTree(BinTree& other) {
+        if(other.root != nullptr) root = new Node(*other.root);
+    }
+    BinTree(BinTree&& other) {
+        root = other.root;
+        other.root = nullptr;
+    }
+    ~BinTree() {
+        delete root;
+    }
     
-    static BinTree Glue(int root, BinTree left, BinTree right) {
+    static BinTree Glue(int root, const BinTree& left, const BinTree& right) {
         return BinTree(new Node(root, left.root, right.root));
     }
     
     static BinTree FromArray(int arr[], int size) {
         if(size == 0) return BinTree();
-        BinTree tree = BinTree(arr[0]);
-        int sectionSize = 1;
+        
+        int sectionSize = 1, index = size - 1, sectionPlace = 0;
+        BinTree tree(arr[index--]);
 
-        Node** list = new Node*[sectionSize]{tree.root};
+        Node** list = new Node*[sectionSize] {tree.root};
         Node** list2 = new Node*[sectionSize<<1];
         
-        int iterum = 0;
-        while((size >> iterum) > 0) iterum++;
-        Node*** listOfLists = new Node**[iterum];
-        int llInd = 0;
-        
-        int index = 1, sectionPlace = 0;
-        while(index < size) {
-            list2[sectionPlace] = new Node(arr[index++]);
-            
-            Node* loc = list[sectionPlace>>1];
-            if((sectionPlace&1) == 0) loc->left = list2[sectionPlace];
-            else loc->right = list2[sectionPlace];
+        while(index >= 0) {
+            if((sectionPlace&1) == 0) 
+                list2[sectionPlace] = (list[sectionPlace>>1]->left = new Node(arr[index--]));
+            else 
+                list2[sectionPlace] = (list[sectionPlace>>1]->right = new Node(arr[index--]));
             
             sectionPlace++;
             if((sectionPlace>>1) == sectionSize) {
-                listOfLists[llInd++] = list;
+                delete[] list;
                 list = list2;
                 sectionSize <<= 1;
                 list2 = new Node*[sectionSize<<1];
                 sectionPlace = 0;
             }
         }
-        for(int n = 0; n < llInd; n++) delete[] listOfLists[n];
-        delete[] listOfLists;
         delete[] list;
         delete[] list2;
         return tree;
     }
     
-    int height() {return height(root);}
+    int height() { return height(root); }
     
     void print() {
         string out[height()];
@@ -134,12 +149,14 @@ class BinTree {
             cout << out[n] << endl;
     }
     
-    bool includes(int value) {return includes(value, root);}
+    bool includes(int value) { return includes(value, root); }
     
-    int countNodes() {return countNodes(root);}
+    int countNodes() { return countNodes(root); }
 
-    int countLeaves() {return countLeaves(root);}
+    int countLeaves() { return countLeaves(root); }
 
+    BinTree& operator=(BinTree& other) = default;
+    
 };
 
 
